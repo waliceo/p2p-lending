@@ -37,11 +37,11 @@ export default function LandingPage() {
             Trusted by families everywhere
           </div>
           <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-6">
-            <span className="text-white">Lending Made </span>
-            <span className="gradient-text">Simple</span>
+            <span className="text-white">Lending Built on </span>
+            <span className="gradient-text">Trust</span>
             <br />
-            <span className="text-white">Between </span>
-            <span className="gradient-text">Loved Ones</span>
+            <span className="text-white">Not </span>
+            <span className="gradient-text">Fine Print</span>
           </h1>
           <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
             Stop losing friendships over money. LendTrust formalizes loans between friends and family
