@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Handshake } from 'lucide-react'
+import { Handshake, MailCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -16,6 +16,7 @@ export default function SignUpPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [isConfirmation, setIsConfirmation] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -49,21 +50,33 @@ export default function SignUpPage() {
 
       if (data.user) {
         // Create user profile in our database
-        await fetch('/api/auth/signup', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            id: data.user.id,
-            email,
-            fullName,
-          }),
-        })
+        try {
+          await fetch('/api/auth/signup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: data.user.id,
+              email,
+              fullName,
+            }),
+          })
+        } catch {
+          // Profile creation can fail if middleware blocks — will be retried on first login
+        }
 
-        router.push('/dashboard')
-        router.refresh()
+        if (data.session) {
+          // Email confirmation disabled — user is logged in immediately
+          router.push('/dashboard')
+          router.refresh()
+        } else {
+          // Email confirmation enabled — show success message
+          setError('')
+          setIsConfirmation(true)
+        }
       }
-    } catch {
-      setError('An unexpected error occurred')
+    } catch (err) {
+      console.error('Signup error:', err)
+      setError('An unexpected error occurred. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -86,6 +99,19 @@ export default function SignUpPage() {
           <CardDescription>Start managing loans with friends & family</CardDescription>
         </CardHeader>
         <CardContent>
+          {isConfirmation ? (
+            <div className="text-center py-4 space-y-4">
+              <MailCheck className="h-12 w-12 text-emerald-400 mx-auto" />
+              <h3 className="text-lg font-semibold text-white">Check your email</h3>
+              <p className="text-sm text-slate-400">
+                We sent a confirmation link to <strong className="text-white">{email}</strong>.
+                Click the link to activate your account.
+              </p>
+              <p className="text-xs text-slate-500">
+                Didn&apos;t receive it? Check your spam folder.
+              </p>
+            </div>
+          ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-400">
@@ -120,13 +146,14 @@ export default function SignUpPage() {
             <Button type="submit" className="w-full" isLoading={isLoading}>
               Create Account
             </Button>
-          </form>
           <p className="text-center text-sm text-slate-400 mt-6">
             Already have an account?{' '}
             <Link href="/login" className="text-emerald-400 hover:text-emerald-300 font-medium">
               Sign in
             </Link>
           </p>
+          </form>
+          )}
         </CardContent>
       </Card>
     </div>
