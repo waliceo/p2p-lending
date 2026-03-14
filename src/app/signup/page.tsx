@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Handshake, MailCheck } from 'lucide-react'
+import { Handshake, Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -14,9 +14,9 @@ export default function SignUpPage() {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [isConfirmation, setIsConfirmation] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -40,6 +40,7 @@ export default function SignUpPage() {
           data: {
             full_name: fullName,
           },
+          emailRedirectTo: undefined,
         },
       })
 
@@ -64,15 +65,9 @@ export default function SignUpPage() {
           // Profile creation can fail if middleware blocks — will be retried on first login
         }
 
-        if (data.session) {
-          // Email confirmation disabled — user is logged in immediately
-          router.push('/dashboard')
-          router.refresh()
-        } else {
-          // Email confirmation enabled — show success message
-          setError('')
-          setIsConfirmation(true)
-        }
+        // Redirect to dashboard immediately (no email verification)
+        router.push('/dashboard')
+        router.refresh()
       }
     } catch (err) {
       console.error('Signup error:', err)
@@ -96,22 +91,9 @@ export default function SignUpPage() {
             </div>
           </Link>
           <CardTitle className="text-2xl">Create your account</CardTitle>
-          <CardDescription>Start managing loans with friends & family</CardDescription>
+          <CardDescription>Start managing loans with friends &amp; family</CardDescription>
         </CardHeader>
         <CardContent>
-          {isConfirmation ? (
-            <div className="text-center py-4 space-y-4">
-              <MailCheck className="h-12 w-12 text-emerald-400 mx-auto" />
-              <h3 className="text-lg font-semibold text-white">Check your email</h3>
-              <p className="text-sm text-slate-400">
-                We sent a confirmation link to <strong className="text-white">{email}</strong>.
-                Click the link to activate your account.
-              </p>
-              <p className="text-xs text-slate-500">
-                Didn&apos;t receive it? Check your spam folder.
-              </p>
-            </div>
-          ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-400">
@@ -134,26 +116,35 @@ export default function SignUpPage() {
               onChange={(e) => setEmail(e.target.value)}
               required
             />
-            <Input
-              label="Password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <div className="relative">
+              <Input
+                label="Password"
+                type={showPassword ? 'text' : 'password'}
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-[38px] text-slate-400 hover:text-slate-200 transition-colors"
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
             <p className="text-xs text-slate-500">Minimum 8 characters</p>
             <Button type="submit" className="w-full" isLoading={isLoading}>
               Create Account
             </Button>
-          <p className="text-center text-sm text-slate-400 mt-6">
-            Already have an account?{' '}
-            <Link href="/login" className="text-emerald-400 hover:text-emerald-300 font-medium">
-              Sign in
-            </Link>
-          </p>
+            <p className="text-center text-sm text-slate-400 mt-6">
+              Already have an account?{' '}
+              <Link href="/login" className="text-emerald-400 hover:text-emerald-300 font-medium">
+                Sign in
+              </Link>
+            </p>
           </form>
-          )}
         </CardContent>
       </Card>
     </div>
