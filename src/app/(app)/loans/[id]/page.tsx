@@ -21,7 +21,7 @@ export default async function LoanDetailPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const loan = await prisma.loan.findUnique({
+  const rawLoan = await prisma.loan.findUnique({
     where: { id },
     include: {
       borrower: { select: { id: true, fullName: true, email: true } },
@@ -30,6 +30,9 @@ export default async function LoanDetailPage({
       invitations: true,
     },
   })
+
+  // Convert Prisma Decimal objects to plain values for RSC serialization
+  const loan = rawLoan ? JSON.parse(JSON.stringify(rawLoan)) as typeof rawLoan : null
 
   if (!loan || (loan.borrowerId !== user.id && loan.lenderId !== user.id)) {
     redirect('/dashboard')
