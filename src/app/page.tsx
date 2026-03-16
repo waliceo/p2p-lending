@@ -195,6 +195,10 @@ export default function LandingPage() {
           <p className="text-sm text-slate-500">
             © {new Date().getFullYear()} LendTrust. Not a financial institution. We facilitate documentation, not loans.
           </p>
+          {/* TEMP DEBUG - remove after fixing */}
+          <p className="text-xs text-slate-600 mt-2 font-mono">
+            BUILD: ed43028-v3 | DB: {process.env.DATABASE_URL ? 'SET' : 'NOT SET'} | SUPA: {process.env.NEXT_PUBLIC_SUPABASE_URL ? 'SET' : 'NOT SET'}
+          </p>
         </div>
       </footer>
     </div>
